@@ -8,6 +8,10 @@ An enhanced Model Context Protocol (MCP) server that allows running Claude Code 
 
 Did you notice that standard AI assistants sometimes struggle with complex, multi-step edits or operations? This server, with its powerful unified `claude_code` tool and enhanced reliability features, aims to make Claude a more direct and capable agent for your coding tasks.
 
+<a href="https://glama.ai/mcp/servers/@grahama1970/claude-code-mcp-enhanced">
+  <img width="380" height="200" src="https://glama.ai/mcp/servers/@grahama1970/claude-code-mcp-enhanced/badge" alt="Claude Code Enhanced MCP server" />
+</a>
+
 <img src="assets/claude_code_example_20250515.png" alt="Claude Code Example" width="400">
 
 ## 🔍 Overview
@@ -668,7 +672,7 @@ Claude Desktop: I'll help you with that. Let me break this down into smaller tas
 
 [Claude Desktop sends a request to the claude_code tool with parentTaskId="task1" and returnMode="summary"]
 
-[Claude Code analyzes the codebase and returns a summary with the BOOMERANG_RESULT marker]
+[Claude Code analyzes the codebase and returns results]
 
 Claude Desktop: Based on Claude Code's analysis, here are the key issues found:
 - Duplicate code in modules X and Y
