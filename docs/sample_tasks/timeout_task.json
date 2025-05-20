@@ -1,0 +1,68 @@
+{
+  "metadata": {
+    "task_id": "timeout-task",
+    "title": "Task with Timeouts",
+    "status": "not_started",
+    "priority": "medium"
+  },
+  "objective": "Test the timeout handling capability.",
+  "requirements": [
+    "Handle quick tasks",
+    "Handle long tasks with timeouts",
+    "Verify timeout behavior"
+  ],
+  "overview": "This task tests the system's ability to handle task timeouts properly. It includes tasks with different timeout settings.",
+  "subtasks": [
+    {
+      "id": "quick-task",
+      "title": "Quick Task",
+      "description": "Answer 'What is 2 + 2?'",
+      "executionMode": "sequential",
+      "timeout": 5000,
+      "steps": [],
+      "status": "not_started",
+      "dependencies": []
+    },
+    {
+      "id": "medium-task",
+      "title": "Medium Task",
+      "description": "Summarize Hamlet in 3 sentences",
+      "executionMode": "sequential",
+      "timeout": 15000,
+      "steps": [],
+      "status": "not_started",
+      "dependencies": []
+    },
+    {
+      "id": "long-task",
+      "title": "Long Task",
+      "description": "Generate a 10,000-word essay about artificial intelligence",
+      "executionMode": "parallel",
+      "timeout": 1000,
+      "steps": [],
+      "status": "not_started",
+      "dependencies": []
+    },
+    {
+      "id": "another-quick-task",
+      "title": "Another Quick Task",
+      "description": "Answer 'What is the largest planet in our solar system?'",
+      "executionMode": "sequential",
+      "timeout": 5000,
+      "steps": [],
+      "status": "not_started",
+      "dependencies": []
+    },
+    {
+      "id": "verify-timeout",
+      "title": "Verify Timeout Handling",
+      "description": "Check if timed-out tasks are properly marked as failed",
+      "executionMode": "sequential",
+      "steps": [],
+      "status": "not_started",
+      "dependencies": ["quick-task", "medium-task", "long-task", "another-quick-task"]
+    }
+  ],
+  "resources": {},
+  "usage_examples": []
+}

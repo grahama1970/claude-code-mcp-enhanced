@@ -1,0 +1,111 @@
+[
+  {
+    "id": "task_geography_sequential",
+    "title": "Geography Questions Task",
+    "description": "Answer geography questions using sequential execution mode",
+    "executionMode": "sequential",
+    "subtasks": [
+      { 
+        "id": "france_capital", 
+        "title": "Capital of France", 
+        "prompt": "What is the capital of France? Please provide a brief answer including some key facts about the city.",
+        "expected_answer": "Paris"
+      },
+      { 
+        "id": "measure_time_geo", 
+        "title": "Measure Execution Time", 
+        "prompt": "Please measure and report how long it took to answer the geography question.",
+        "expected_answer": "Includes time measurement"
+      }
+    ]
+  },
+  {
+    "id": "task_python_functions_parallel",
+    "title": "Python Functions Generation",
+    "description": "Generate Python functions using parallel execution mode",
+    "executionMode": "parallel",
+    "subtasks": [
+      {
+        "id": "multiply_function",
+        "title": "Multiplication Function",
+        "prompt": "Write a Python function that multiplies two numbers. Include docstrings and type hints.",
+        "expected_answer": "Python function"
+      },
+      {
+        "id": "sum_list_function",
+        "title": "Sum List Function",
+        "prompt": "Write a Python function that calculates the sum of all numbers in a list. Include docstrings and type hints.",
+        "expected_answer": "Python function"
+      },
+      {
+        "id": "measure_time_py",
+        "title": "Measure Execution Time",
+        "prompt": "Please measure and report how long it took to generate both Python functions. Compare with sequential execution.",
+        "expected_answer": "Time comparison"
+      }
+    ]
+  },
+  {
+    "id": "task_apple_color_sequential",
+    "title": "Apple Color Question",
+    "description": "Answer a question about apple color using sequential execution mode",
+    "executionMode": "sequential",
+    "subtasks": [
+      {
+        "id": "apple_color",
+        "title": "Common Apple Color",
+        "prompt": "What is the most common color of an apple? Please provide a brief answer including some facts about different apple varieties and their colors.",
+        "expected_answer": "Red"
+      },
+      {
+        "id": "measure_time_apple",
+        "title": "Measure Execution Time",
+        "prompt": "Please measure and report how long it took to answer the apple color question.",
+        "expected_answer": "Includes time measurement"
+      }
+    ]
+  },
+  {
+    "id": "task_mixed_mode_execution",
+    "title": "Mixed Mode Execution",
+    "description": "Implement a mixed execution flow with both sequential and parallel tasks",
+    "executionMode": "mixed",
+    "subtasks": [
+      {
+        "id": "generate_random_list",
+        "title": "Generate Random List",
+        "prompt": "Generate a list of 10 random integers between 1 and 100. This is a sequential task.",
+        "executionMode": "sequential",
+        "expected_answer": "List of 10 integers"
+      },
+      {
+        "id": "calculate_sum",
+        "title": "Calculate Sum",
+        "prompt": "Calculate the sum of the numbers generated in the previous task. This is a parallel task.",
+        "executionMode": "parallel",
+        "expected_answer": "Sum calculation"
+      },
+      {
+        "id": "calculate_average",
+        "title": "Calculate Average",
+        "prompt": "Calculate the average of the numbers generated in the first task. This is a parallel task.",
+        "executionMode": "parallel",
+        "expected_answer": "Average calculation"
+      },
+      {
+        "id": "find_maximum",
+        "title": "Find Maximum",
+        "prompt": "Find the maximum value in the list of numbers generated in the first task. This is a parallel task.",
+        "executionMode": "parallel",
+        "expected_answer": "Maximum value"
+      },
+      {
+        "id": "create_report",
+        "title": "Create Report",
+        "prompt": "Create a report with all results from the previous tasks. Include the original list, sum, average, and maximum value. This is a sequential task.",
+        "executionMode": "sequential",
+        "expected_answer": "Comprehensive report"
+      }
+    ]
+  }
+]

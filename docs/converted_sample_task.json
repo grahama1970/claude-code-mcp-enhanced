@@ -1,0 +1,17 @@
+{
+  "metadata": {
+    "task_id": "001",
+    "title": "Sample Task",
+    "status": "not_started",
+    "priority": "medium"
+  },
+  "objective": "This is a sample task for testing.",
+  "requirements": [
+    "Requirement 1",
+    "Requirement 2"
+  ],
+  "overview": "This is a sample task overview.",
+  "subtasks": [],
+  "resources": {},
+  "usage_examples": []
+}

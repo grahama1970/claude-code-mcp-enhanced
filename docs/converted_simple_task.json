@@ -1,0 +1,18 @@
+{
+  "metadata": {
+    "task_id": "002",
+    "title": "Simple Test Task",
+    "status": "not_started",
+    "priority": "medium"
+  },
+  "objective": "Test the task orchestration system with a simple task.",
+  "requirements": [
+    "Process a simple task document",
+    "Convert it to JSON format",
+    "Execute the task"
+  ],
+  "overview": "This is a simple test task to verify that the task orchestration system works as expected.",
+  "subtasks": [],
+  "resources": {},
+  "usage_examples": []
+}

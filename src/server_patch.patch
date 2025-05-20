@@ -1,0 +1,102 @@
+--- src/server.ts	2025-05-19 18:07:08.000000000 +0000
++++ src/server.ts.new	2025-05-19 18:07:08.000000000 +0000
+@@ -19,6 +19,9 @@
+ import retry from 'async-retry';
+ import packageJson from '../package.json' with { type: 'json' }; // Import package.json with attribute
+ 
++// Import task command functions
++import { convertTaskMarkdown, executeTask, taskStatus } from './task_command.js';
++
+ // Define environment variables globally
+ const debugMode = process.env.MCP_CLAUDE_DEBUG === 'true';
+ const heartbeatIntervalMs = parseInt(process.env.MCP_HEARTBEAT_INTERVAL_MS || '15000', 10); // Default: 15 seconds
+@@ -369,6 +372,66 @@
+             required: ['prompt'],
+           },
+         },
++        {
++          name: 'execute_task',
++          description: 'Execute a task with the task orchestration system. Processes a task previously converted from markdown.',
++          inputSchema: {
++            type: 'object',
++            properties: {
++              taskId: {
++                type: 'string',
++                description: 'ID of the task to execute',
++              },
++              taskPath: {
++                type: 'string',
++                description: 'Optional path to the task JSON file (if not using task ID)',
++              },
++            },
++            required: ['taskId'],
++          },
++        },
++        {
++          name: 'task_status',
++          description: 'Check the status of a task. Returns the current execution state of a task.',
++          inputSchema: {
++            type: 'object',
++            properties: {
++              taskId: {
++                type: 'string',
++                description: 'ID of the task to check',
++              },
++            },
++            required: ['taskId'],
++          },
++        }
+       ],
+     }));
+ 
+@@ -570,14 +633,32 @@
+     
+     try {
+       // Handle tools - we support 'health', 'claude_code', and 'convert_task_markdown'
+-      if (toolName !== 'claude_code' && toolName !== 'health' && toolName !== 'convert_task_markdown') {
++      if (toolName !== 'claude_code' && toolName !== 'health' && toolName !== 'convert_task_markdown' 
++          && toolName !== 'execute_task' && toolName !== 'task_status') {
+         // ErrorCode.ToolNotFound should be ErrorCode.MethodNotFound as per SDK for tools
+         throw new McpError(ErrorCode.MethodNotFound, `Tool ${toolName} not found`);
+       }
+ 
+       // Add specific handler sections for each tool
+       
+-      // Handle health check tool
++      // Handle execute_task tool
++      if (toolName === 'execute_task') {
++        const { taskId } = args.params.arguments;
++        
++        debugLog(`[Debug] Executing task: ${taskId}`);
++        
++        const result = await executeTask({ taskId });
++        return result;
++      }
++      
++      // Handle task_status tool
++      if (toolName === 'task_status') {
++        const { taskId } = args.params.arguments;
++        
++        debugLog(`[Debug] Checking task status: ${taskId}`);
++        
++        const result = await taskStatus({ taskId });
++        return result;
++      }
++      
++      // Handle convert_task_markdown tool
++      if (toolName === 'convert_task_markdown') {
++        const { markdownPath, outputPath } = args.params.arguments;
++        
++        debugLog(`[Debug] Converting markdown task: ${markdownPath}`);
++        
++        const result = await convertTaskMarkdown({ 
++          markdownPath,
++          outputPath
++        });
++        return result;
++      }
++      
++       // Handle health check tool
+       if (toolName === 'health') {
+         // Check if Claude CLI is accessible
+         let claudeCliStatus = 'unknown';

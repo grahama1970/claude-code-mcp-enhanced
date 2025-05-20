@@ -1,0 +1,94 @@
+{
+  "metadata": {
+    "task_id": "task-004",
+    "title": "Task Execution Modes (Sequential and Parallel)",
+    "status": "not_started",
+    "priority": "medium"
+  },
+  "objective": "Implement task execution modes (sequential and parallel) to allow users to specify how subtasks should be executed within a task.",
+  "requirements": [
+    "Add support for specifying execution mode in task data",
+    "Implement sequential execution for subtasks",
+    "Implement parallel execution for subtasks",
+    "Add MCP endpoints for task execution and status monitoring",
+    "Create documentation and examples for using execution modes"
+  ],
+  "overview": "This task enhances the Claude Code MCP server with task execution capabilities, allowing users to choose between sequential and parallel execution modes for subtasks. This provides flexibility for different types of workflows and can improve performance for independent tasks.",
+  "subtasks": [
+    {
+      "id": "task-1",
+      "title": "Answer Simple Geography Questions",
+      "description": "This task will implement a sequential execution mode to answer a series of simple geography questions.",
+      "executionMode": "sequential",
+      "steps": [
+        "1.1 Create a task that answers \"What is the capital of France?\" using sequential execution mode",
+        "1.2 Capture and log the results of the task",
+        "1.3 Measure execution time",
+        "1.4 Create verification report with results and metrics"
+      ],
+      "status": "not_started",
+      "dependencies": []
+    },
+    {
+      "id": "task-2",
+      "title": "Generate Python Functions",
+      "description": "This task will implement parallel execution mode to generate multiple Python functions simultaneously.",
+      "executionMode": "sequential",
+      "steps": [
+        "2.1 Create a task that writes \"Write a Python function that multiplies two numbers\" using parallel execution mode",
+        "2.2 Add a second function request for \"Write a Python function that calculates the sum of all numbers in a list\"",
+        "2.3 Capture and log the results of both tasks",
+        "2.4 Measure execution time and compare with sequential execution",
+        "2.5 Create verification report with results and performance comparison"
+      ],
+      "status": "not_started",
+      "dependencies": []
+    },
+    {
+      "id": "task-3",
+      "title": "Apple Color Question",
+      "description": "This task will ask a simple question about the most common color of an apple using sequential execution mode.",
+      "executionMode": "sequential",
+      "steps": [
+        "3.1 Create a task that answers \"What is the most common color of an apple?\" using sequential execution mode",
+        "3.2 Capture and log the result",
+        "3.3 Measure execution time",
+        "3.4 Create verification report with results and metrics"
+      ],
+      "status": "not_started",
+      "dependencies": []
+    },
+    {
+      "id": "task-4",
+      "title": "Mixed Mode Task Execution",
+      "description": "This task will implement a mixed execution flow with both sequential and parallel tasks.",
+      "executionMode": "sequential",
+      "steps": [
+        "4.1 Create a task with 5 subtasks:\n  - Sequential: \"Generate a list of 10 random integers between 1 and 100\"\n  - Parallel: \"Calculate the sum of the numbers\"\n  - Parallel: \"Calculate the average of the numbers\"\n  - Parallel: \"Find the maximum value\"\n  - Sequential: \"Create a report with all results\"",
+        "4.2 Implement dependency management between tasks",
+        "4.3 Capture execution flow and results",
+        "4.4 Measure performance metrics",
+        "4.5 Create verification report with results and flow diagram"
+      ],
+      "status": "not_started",
+      "dependencies": []
+    },
+    {
+      "id": "task-5",
+      "title": "Tasks with Timeouts",
+      "description": "This task will implement timeout handling for tasks.",
+      "executionMode": "sequential",
+      "steps": [
+        "5.1 Create a simple task that returns \"What is 2 + 2?\" with a 5-second timeout",
+        "5.2 Create a complex task that times out (e.g., \"Generate a 10,000-word essay\" with a 1-second timeout)",
+        "5.3 Implement timeout detection and handling",
+        "5.4 Capture timeout events and partial results",
+        "5.5 Create verification report with timeout handling metrics"
+      ],
+      "status": "not_started",
+      "dependencies": []
+    }
+  ],
+  "resources": {},
+  "usage_examples": []
+}

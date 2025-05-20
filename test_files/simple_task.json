@@ -1,0 +1,46 @@
+{
+  "metadata": {
+    "task_id": "task-005",
+    "title": "Simple Test Task",
+    "status": "not_started",
+    "priority": "medium"
+  },
+  "objective": "[REPLACE WITH SPECIFIC OBJECTIVE]",
+  "requirements": [
+    "[REPLACE WITH SPECIFIC REQUIREMENT]",
+    "[REPLACE WITH SPECIFIC REQUIREMENT]",
+    "[ADD MORE REQUIREMENTS AS NEEDED]"
+  ],
+  "overview": "[REPLACE WITH OVERVIEW OF THE TASK]",
+  "subtasks": [
+    {
+      "id": "task-1",
+      "title": "Test Sequential Execution",
+      "description": "",
+      "executionMode": "sequential",
+      "steps": [],
+      "status": "not_started",
+      "dependencies": []
+    },
+    {
+      "id": "task-2",
+      "title": "Test Parallel Execution",
+      "description": "",
+      "executionMode": "parallel",
+      "steps": [],
+      "status": "not_started",
+      "dependencies": []
+    },
+    {
+      "id": "task-3",
+      "title": "Create Final Report",
+      "description": "",
+      "executionMode": "sequential",
+      "steps": [],
+      "status": "not_started",
+      "dependencies": []
+    }
+  ],
+  "resources": {},
+  "usage_examples": []
+}

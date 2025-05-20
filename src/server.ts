@@ -12,11 +12,29 @@ import { spawn } from 'node:child_process';
 import { existsSync, watch } from 'node:fs';
 import { promises as fs } from 'node:fs';
 import { homedir } from 'node:os';
-import { join, resolve as pathResolve } from 'node:path';
+import { join, resolve as pathResolve, dirname } from 'node:path';
 import * as path from 'path';
 import * as os from 'os'; // Added os import
+import { fileURLToPath } from 'node:url';
 import retry from 'async-retry';
 import packageJson from '../package.json' with { type: 'json' }; // Import package.json with attribute
+
+// Create __dirname equivalent for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// Import task command functions
+// Using the pooled implementation for better resource management
+import { convertTaskMarkdown, executeTask, taskStatus } from './pooled_task_command.js';
+
+// Import boomerang task handler for task orchestration
+import { createBoomerangTask, getParentTaskResults } from './boomerang_handler.js';
+
+// Import MacOS Automator MCP
+import { MacOSAutomator } from '@steipete/macos-automator-mcp';
+
+// Task execution mode configuration
+const defaultTaskExecutionMode = process.env.MCP_DEFAULT_TASK_EXECUTION_MODE === 'parallel' ? 'parallel' : 'sequential';
 
 // Define environment variables globally
 const debugMode = process.env.MCP_CLAUDE_DEBUG === 'true';
@@ -221,12 +239,21 @@ class ClaudeCodeServer {
   private claudeCliPath: string; // This now holds either a full path or just 'claude'
   private packageVersion: string; // Add packageVersion property
   private activeRequests: Set<string> = new Set(); // Track active request IDs
+  private macosAutomator: MacOSAutomator; // MacOS Automator MCP
 
   constructor() {
     // Use the simplified findClaudeCli function
     this.claudeCliPath = findClaudeCli(); // Removed debugMode argument
     console.error(`[Setup] Using Claude CLI command/path: ${this.claudeCliPath}`);
     this.packageVersion = packageJson.version; // Access version directly
+    
+    // Initialize MacOS Automator MCP
+    try {
+      this.macosAutomator = new MacOSAutomator();
+      console.error('[Setup] MacOS Automator MCP initialized successfully');
+    } catch (error) {
+      console.error('[Warning] Failed to initialize MacOS Automator MCP:', error);
+    }
 
     this.server = new Server(
       {
@@ -312,6 +339,106 @@ class ClaudeCodeServer {
               },
             },
             required: ['markdownPath'],
+          },
+        },
+        {
+          name: 'execute_task',
+          description: 'Execute a task with the task orchestration system. Tasks can be run in sequential or parallel mode.',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              taskId: {
+                type: 'string',
+                description: 'ID of the task to execute',
+              },
+              executionMode: {
+                type: 'string',
+                enum: ['sequential', 'parallel'],
+                description: 'Execution mode for task (sequential or parallel). Defaults to sequential.',
+              },
+            },
+            required: ['taskId'],
+          },
+        },
+        {
+          name: 'task_status',
+          description: 'Check the status of a task being executed by the task orchestration system.',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              taskId: {
+                type: 'string',
+                description: 'ID of the task to check status for',
+              },
+            },
+            required: ['taskId'],
+          },
+        },
+        {
+          name: 'create_boomerang_task',
+          description: 'Create a boomerang task (child task) that reports back to a parent task. Used for complex task orchestration.',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              parentTaskId: {
+                type: 'string',
+                description: 'ID of the parent task that will receive the results',
+              },
+              description: {
+                type: 'string',
+                description: 'Short description of the child task for organization and tracking',
+              },
+              prompt: {
+                type: 'string',
+                description: 'The detailed prompt for the child task to execute',
+              },
+              workFolder: {
+                type: 'string',
+                description: 'Optional working directory for the task execution',
+              },
+              returnMode: {
+                type: 'string',
+                enum: ['summary', 'full'],
+                description: 'How results should be returned: summary (concise) or full (detailed). Defaults to full.',
+              },
+              mode: {
+                type: 'string',
+                description: 'Optional Roo mode to use for Claude execution',
+              },
+            },
+            required: ['parentTaskId', 'description', 'prompt'],
+          },
+        },
+        {
+          name: 'get_parent_task_results',
+          description: 'Get the results of a parent task and its child tasks. Used to check the status and results of orchestrated tasks.',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              parentTaskId: {
+                type: 'string',
+                description: 'ID of the parent task to get results for',
+              },
+            },
+            required: ['parentTaskId'],
+          },
+        },
+        {
+          name: 'macos_automator',
+          description: 'Automate macOS operations including controlling applications, manipulating files, and running AppleScript.',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              action: {
+                type: 'string',
+                description: 'The action to perform (openApplication, runAppleScript, getClipboard, setClipboard, etc.)',
+              },
+              parameters: {
+                type: 'object',
+                description: 'Parameters for the action (varies by action type)',
+              },
+            },
+            required: ['action'],
           },
         },
         {
@@ -566,8 +693,243 @@ class ClaudeCodeServer {
         }
       }
       
-      // Handle tools - we support 'health', 'claude_code', and 'convert_task_markdown'
-      if (toolName !== 'claude_code' && toolName !== 'health' && toolName !== 'convert_task_markdown') {
+      // Handle execute_task tool
+      if (toolName === 'execute_task') {
+        const toolArguments = args.params.arguments;
+        
+        // Extract taskId (required)
+        let taskId: string;
+        let executionMode: 'sequential' | 'parallel' | undefined;
+        
+        if (
+          toolArguments &&
+          typeof toolArguments === 'object' &&
+          'taskId' in toolArguments &&
+          typeof toolArguments.taskId === 'string'
+        ) {
+          taskId = toolArguments.taskId;
+        } else {
+          throw new McpError(ErrorCode.InvalidParams, 'Missing or invalid required parameter: taskId for execute_task tool');
+        }
+        
+        // Extract executionMode (optional)
+        if (toolArguments.executionMode && 
+            (toolArguments.executionMode === 'sequential' || toolArguments.executionMode === 'parallel')) {
+          executionMode = toolArguments.executionMode;
+        }
+        
+        debugLog(`[Debug] Executing task: ${taskId} in ${executionMode || 'sequential'} mode`);
+        
+        try {
+          const result = await executeTask({ taskId, executionMode });
+          
+          this.activeRequests.delete(requestId);
+          return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+        } catch (error) {
+          this.activeRequests.delete(requestId);
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          throw new McpError(ErrorCode.InternalError, `Failed to execute task: ${errorMessage}`);
+        }
+      }
+      
+      // Handle task_status tool
+      if (toolName === 'task_status') {
+        const toolArguments = args.params.arguments;
+        
+        // Extract taskId (required)
+        let taskId: string;
+        
+        if (
+          toolArguments &&
+          typeof toolArguments === 'object' &&
+          'taskId' in toolArguments &&
+          typeof toolArguments.taskId === 'string'
+        ) {
+          taskId = toolArguments.taskId;
+        } else {
+          throw new McpError(ErrorCode.InvalidParams, 'Missing or invalid required parameter: taskId for task_status tool');
+        }
+        
+        debugLog(`[Debug] Checking status for task: ${taskId}`);
+        
+        try {
+          const result = await taskStatus({ taskId });
+          
+          this.activeRequests.delete(requestId);
+          return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+        } catch (error) {
+          this.activeRequests.delete(requestId);
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          throw new McpError(ErrorCode.InternalError, `Failed to check task status: ${errorMessage}`);
+        }
+      }
+      
+      // Handle create_boomerang_task tool
+      if (toolName === 'create_boomerang_task') {
+        const toolArguments = args.params.arguments;
+        
+        // Extract required parameters
+        let parentTaskId: string;
+        let description: string;
+        let prompt: string;
+        
+        if (
+          toolArguments &&
+          typeof toolArguments === 'object' &&
+          'parentTaskId' in toolArguments &&
+          typeof toolArguments.parentTaskId === 'string' &&
+          'description' in toolArguments &&
+          typeof toolArguments.description === 'string' &&
+          'prompt' in toolArguments &&
+          typeof toolArguments.prompt === 'string'
+        ) {
+          parentTaskId = toolArguments.parentTaskId;
+          description = toolArguments.description;
+          prompt = toolArguments.prompt;
+        } else {
+          throw new McpError(ErrorCode.InvalidParams, 'Missing or invalid required parameters for create_boomerang_task tool');
+        }
+        
+        // Extract optional parameters
+        let workFolder: string | undefined;
+        let returnMode: 'summary' | 'full' | undefined;
+        let mode: string | undefined;
+        
+        if (toolArguments.workFolder && typeof toolArguments.workFolder === 'string') {
+          workFolder = toolArguments.workFolder;
+        }
+        
+        if (toolArguments.returnMode && 
+            (toolArguments.returnMode === 'summary' || toolArguments.returnMode === 'full')) {
+          returnMode = toolArguments.returnMode;
+        }
+        
+        if (toolArguments.mode && typeof toolArguments.mode === 'string') {
+          mode = toolArguments.mode;
+        }
+        
+        debugLog(`[Debug] Creating boomerang task for parent ${parentTaskId}, description: ${description}`);
+        
+        try {
+          const result = await createBoomerangTask(
+            parentTaskId,
+            description,
+            prompt,
+            {
+              workFolder,
+              returnMode,
+              mode
+            }
+          );
+          
+          this.activeRequests.delete(requestId);
+          return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+        } catch (error) {
+          this.activeRequests.delete(requestId);
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          throw new McpError(ErrorCode.InternalError, `Failed to create boomerang task: ${errorMessage}`);
+        }
+      }
+      
+      // Handle get_parent_task_results tool
+      if (toolName === 'get_parent_task_results') {
+        const toolArguments = args.params.arguments;
+        
+        // Extract parentTaskId (required)
+        let parentTaskId: string;
+        
+        if (
+          toolArguments &&
+          typeof toolArguments === 'object' &&
+          'parentTaskId' in toolArguments &&
+          typeof toolArguments.parentTaskId === 'string'
+        ) {
+          parentTaskId = toolArguments.parentTaskId;
+        } else {
+          throw new McpError(ErrorCode.InvalidParams, 'Missing or invalid required parameter: parentTaskId for get_parent_task_results tool');
+        }
+        
+        debugLog(`[Debug] Getting results for parent task: ${parentTaskId}`);
+        
+        try {
+          const results = await getParentTaskResults(parentTaskId);
+          
+          if (!results) {
+            const notFoundResponse = {
+              success: false,
+              message: `Parent task ${parentTaskId} not found or has no results yet`,
+              parentTaskId
+            };
+            
+            this.activeRequests.delete(requestId);
+            return { content: [{ type: 'text', text: JSON.stringify(notFoundResponse, null, 2) }] };
+          }
+          
+          const response = {
+            success: true,
+            message: `Results retrieved for parent task ${parentTaskId}`,
+            ...results
+          };
+          
+          this.activeRequests.delete(requestId);
+          return { content: [{ type: 'text', text: JSON.stringify(response, null, 2) }] };
+        } catch (error) {
+          this.activeRequests.delete(requestId);
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          throw new McpError(ErrorCode.InternalError, `Failed to get parent task results: ${errorMessage}`);
+        }
+      }
+      
+      // Handle macos_automator tool
+      if (toolName === 'macos_automator') {
+        if (!this.macosAutomator) {
+          throw new McpError(ErrorCode.InternalError, 'MacOS Automator MCP not initialized');
+        }
+        
+        const toolArguments = args.params.arguments;
+        
+        // Extract action (required)
+        let action: string;
+        let parameters: object = {};
+        
+        if (
+          toolArguments &&
+          typeof toolArguments === 'object' &&
+          'action' in toolArguments &&
+          typeof toolArguments.action === 'string'
+        ) {
+          action = toolArguments.action;
+        } else {
+          throw new McpError(ErrorCode.InvalidParams, 'Missing or invalid required parameter: action for macos_automator tool');
+        }
+        
+        // Extract parameters (optional)
+        if (toolArguments.parameters && typeof toolArguments.parameters === 'object') {
+          parameters = toolArguments.parameters;
+        }
+        
+        debugLog(`[Debug] Executing MacOS Automator action: ${action}`);
+        
+        try {
+          const result = await this.macosAutomator.performAction({
+            action,
+            parameters
+          });
+          
+          this.activeRequests.delete(requestId);
+          return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+        } catch (error) {
+          this.activeRequests.delete(requestId);
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          throw new McpError(ErrorCode.InternalError, `MacOS Automator error: ${errorMessage}`);
+        }
+      }
+      
+      // Handle the supported tools
+      if (toolName !== 'claude_code' && toolName !== 'health' && toolName !== 'convert_task_markdown' && 
+          toolName !== 'execute_task' && toolName !== 'task_status' && 
+          toolName !== 'create_boomerang_task' && toolName !== 'get_parent_task_results' &&
+          toolName !== 'macos_automator') {
         // ErrorCode.ToolNotFound should be ErrorCode.MethodNotFound as per SDK for tools
         throw new McpError(ErrorCode.MethodNotFound, `Tool ${toolName} not found`);
       }
@@ -758,6 +1120,23 @@ ${returnMode === 'summary' ? 'IMPORTANT: Keep your response concise and focused 
           processedOutput += boomerangMarker;
           
           debugLog(`[Debug] Added boomerang marker to output for parent task: ${parentTaskId}`);
+          
+          // Process the result back to the parent
+          // Import only if needed to avoid circular dependencies
+          const { processChildTaskResult } = await import('./boomerang_handler.js');
+          try {
+            // Generate a unique child task ID if not already set
+            const childTaskId = `child_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+            processChildTaskResult(childTaskId, processedOutput)
+              .then(processed => {
+                debugLog(`[Debug] Boomerang result processing ${processed ? 'succeeded' : 'failed'} for task ${childTaskId} and parent ${parentTaskId}`);
+              })
+              .catch(error => {
+                debugLog(`[Error] Failed to process boomerang result: ${error}`);
+              });
+          } catch (error) {
+            debugLog(`[Error] Error during boomerang result processing: ${error}`);
+          }
         }
 
         // Request completed successfully, remove from tracking

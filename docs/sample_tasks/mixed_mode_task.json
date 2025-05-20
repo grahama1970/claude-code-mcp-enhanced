@@ -1,0 +1,64 @@
+{
+  "metadata": {
+    "task_id": "mixed-mode-task",
+    "title": "Mixed Mode Task",
+    "status": "not_started",
+    "priority": "high"
+  },
+  "objective": "Test the mixed execution mode with dependencies.",
+  "requirements": [
+    "Generate random numbers",
+    "Process numbers in parallel",
+    "Create a final report"
+  ],
+  "overview": "This task tests the mixed execution mode where some subtasks run sequentially and others run in parallel, based on dependencies.",
+  "subtasks": [
+    {
+      "id": "task-1",
+      "title": "Generate Random Numbers",
+      "description": "Generate a list of 10 random integers between 1 and 100",
+      "executionMode": "sequential",
+      "steps": [],
+      "status": "not_started",
+      "dependencies": []
+    },
+    {
+      "id": "task-2",
+      "title": "Calculate Sum",
+      "description": "Calculate the sum of the generated numbers",
+      "executionMode": "parallel",
+      "steps": [],
+      "status": "not_started",
+      "dependencies": ["task-1"]
+    },
+    {
+      "id": "task-3",
+      "title": "Calculate Average",
+      "description": "Calculate the average of the generated numbers",
+      "executionMode": "parallel",
+      "steps": [],
+      "status": "not_started",
+      "dependencies": ["task-1"]
+    },
+    {
+      "id": "task-4",
+      "title": "Find Maximum",
+      "description": "Find the maximum value in the list",
+      "executionMode": "parallel",
+      "steps": [],
+      "status": "not_started",
+      "dependencies": ["task-1"]
+    },
+    {
+      "id": "task-5",
+      "title": "Create Report",
+      "description": "Create a report with all the results",
+      "executionMode": "sequential",
+      "steps": [],
+      "status": "not_started",
+      "dependencies": ["task-2", "task-3", "task-4"]
+    }
+  ],
+  "resources": {},
+  "usage_examples": []
+}

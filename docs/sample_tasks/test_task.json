@@ -1,0 +1,43 @@
+{
+  "metadata": {
+    "task_id": "1",
+    "title": "Geography Question",
+    "status": "not_started",
+    "priority": "medium"
+  },
+  "objective": "Test the MCP with a simple task.",
+  "requirements": [
+    "Answer geography questions",
+    "Write Python functions",
+    "Answer about apple colors"
+  ],
+  "overview": "This is a simple test task to verify the MCP functionality. It includes three subtasks with different execution modes.",
+  "subtasks": [
+    {
+      "id": "1",
+      "title": "Geography Question",
+      "description": "",
+      "steps": [],
+      "status": "not_started",
+      "dependencies": []
+    },
+    {
+      "id": "2",
+      "title": "Python Function",
+      "description": "",
+      "steps": [],
+      "status": "not_started",
+      "dependencies": []
+    },
+    {
+      "id": "3",
+      "title": "Apple Color",
+      "description": "",
+      "steps": [],
+      "status": "not_started",
+      "dependencies": []
+    }
+  ],
+  "resources": {},
+  "usage_examples": []
+}

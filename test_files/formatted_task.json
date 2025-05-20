@@ -1,0 +1,80 @@
+{
+  "metadata": {
+    "task_id": "task-006",
+    "title": "Properly Formatted Task",
+    "status": "not_started",
+    "priority": "medium"
+  },
+  "objective": "Test the task converter with a properly formatted task.",
+  "requirements": [
+    "Include all required sections",
+    "Follow formatting conventions",
+    "Include execution modes and dependencies"
+  ],
+  "overview": "This task is specifically formatted to test the task converter. It includes all required sections and follows the conventions in the template guide.",
+  "subtasks": [
+    {
+      "id": "task-1",
+      "title": "Test Sequential Execution",
+      "description": "Test the sequential execution mode by running a simple task.",
+      "executionMode": "sequential",
+      "steps": [
+        "1.1 Create a test command\n  - Define a simple command\n  - Set timeout parameters\n  - Prepare execution environment\n  - Configure logging",
+        "1.2 Run the command sequentially\n  - Execute the command\n  - Measure execution time\n  - Capture command output\n  - Log execution details",
+        "1.3 Create verification report\n  - Document execution results\n  - Include performance metrics\n  - Verify correctness\n  - Note any limitations"
+      ],
+      "status": "not_started",
+      "dependencies": []
+    },
+    {
+      "id": "task-2",
+      "title": "Test Parallel Execution",
+      "description": "Test the parallel execution mode by running multiple tasks concurrently.",
+      "executionMode": "parallel",
+      "steps": [
+        "2.1 Create multiple test commands\n  - Define several independent commands\n  - Set timeout parameters\n  - Prepare execution environment\n  - Configure logging",
+        "2.2 Run commands in parallel\n  - Execute commands concurrently\n  - Measure total execution time\n  - Capture all command outputs\n  - Log execution details",
+        "2.3 Create verification report\n  - Document execution results\n  - Include performance comparison with sequential mode\n  - Verify correctness\n  - Note any limitations"
+      ],
+      "status": "not_started",
+      "dependencies": [
+        "Task 1"
+      ]
+    },
+    {
+      "id": "task-3",
+      "title": "Test Mixed Execution Flow",
+      "description": "Test a mixed execution flow with both sequential and parallel components.",
+      "executionMode": "sequential",
+      "steps": [
+        "3.1 Create task dependency graph\n  - Define tasks with dependencies\n  - Specify execution modes for each task\n  - Create a complex workflow\n  - Visualize the dependency graph",
+        "3.2 Execute the workflow\n  - Process the dependency graph\n  - Execute tasks in appropriate order\n  - Respect execution modes\n  - Collect execution metrics",
+        "3.3 Create verification report\n  - Document execution flow\n  - Include performance metrics\n  - Verify correctness\n  - Note any limitations"
+      ],
+      "status": "not_started",
+      "dependencies": [
+        "Task 1",
+        "Task 2"
+      ]
+    },
+    {
+      "id": "task-4",
+      "title": "Completion Verification and Iteration",
+      "description": "",
+      "executionMode": "sequential",
+      "steps": [
+        "4.1 Review all task reports\n  - Read all reports in `/docs/reports/006_task_*`\n  - Create checklist of incomplete features\n  - Identify failed tests or missing functionality\n  - Document specific issues preventing completion\n  - Prioritize fixes by impact",
+        "4.2 Create task completion matrix\n  - Build comprehensive status table\n  - Mark each sub-task as COMPLETE/INCOMPLETE\n  - List specific failures for incomplete tasks\n  - Identify blocking dependencies\n  - Calculate overall completion percentage",
+        "4.3 Iterate on incomplete tasks\n  - Return to first incomplete task\n  - Fix identified issues\n  - Re-run validation tests\n  - Update verification report\n  - Continue until task passes",
+        "4.4 Re-validate completed tasks\n  - Ensure no regressions from fixes\n  - Run integration tests\n  - Verify cross-task compatibility\n  - Update affected reports\n  - Document any new limitations",
+        "4.5 Final comprehensive validation\n  - Execute tasks in both modes\n  - Test status monitoring\n  - Test error handling\n  - Verify documentation accuracy\n  - Confirm all features work together",
+        "4.6 Create final summary report\n  - Create `/docs/reports/006_final_summary.md`\n  - Include completion matrix\n  - Document all working features\n  - List any remaining limitations\n  - Provide usage recommendations",
+        "4.7 Mark task complete only if ALL sub-tasks pass\n  - Verify 100% task completion\n  - Confirm all reports show success\n  - Ensure no critical issues remain\n  - Get final approval\n  - Update task status to \u2705 Complete"
+      ],
+      "status": "not_started",
+      "dependencies": []
+    }
+  ],
+  "resources": {},
+  "usage_examples": []
+}

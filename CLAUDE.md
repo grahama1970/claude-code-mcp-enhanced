@@ -16,6 +16,7 @@ project_name/
 ├── examples/
 ├── pyproject.toml
 ├── README.md
+├── scripts/           # For utility scripts
 ├── src/
 │   └── project_name/
 ├── tests/
@@ -27,6 +28,11 @@ project_name/
 - **Package Management**: Always use uv with pyproject.toml, never pip
 - **Mirror Structure**: examples/, tests/ mirror the project structure in src/
 - **Documentation**: Keep comprehensive docs in docs/ directory
+- **Clean Root Directory**: NEVER place stray Python scripts, JSON files, or other implementation files in the project root. Use appropriate directories instead:
+  - Python scripts → scripts/ directory
+  - Sample/test files → docs/sample_tasks/ or tests/fixtures/
+  - Application code → src/ directory
+  - Only configuration files (pyproject.toml, package.json, etc.) belong in the root
 
 ## Module Requirements
 - **Size**: Maximum 500 lines of code per file

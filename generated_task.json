@@ -1,0 +1,22 @@
+[
+  {
+    "id": "task_1747759377152_fm3hb",
+    "title": "Geography Questions Task",
+    "description": "Answer geography questions using sequential execution mode",
+    "executionMode": "sequential",
+    "subtasks": [
+      {
+        "id": "france_capital",
+        "title": "Capital of France",
+        "prompt": "What is the capital of France?",
+        "expected_answer": "Paris"
+      },
+      {
+        "id": "measure_time",
+        "title": "Measure Execution Time",
+        "prompt": "How long did it take to answer the previous question?",
+        "expected_answer": "Includes time measurement"
+      }
+    ]
+  }
+]

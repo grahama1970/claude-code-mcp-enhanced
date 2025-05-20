@@ -1,0 +1,41 @@
+{
+  "metadata": {
+    "task_id": "002",
+    "title": "Simple Test Task",
+    "status": "not_started",
+    "priority": "medium"
+  },
+  "objective": "Test the task orchestration system with a simple task.",
+  "requirements": [
+    "Process a simple task document",
+    "Convert it to JSON format",
+    "Execute the task"
+  ],
+  "overview": "This is a simple test task to verify that the task orchestration system works as expected.",
+  "subtasks": [
+    {
+      "id": "1",
+      "title": "Test Conversion",
+      "description": "**Priority**: HIGH | **Complexity**: LOW | **Impact**: HIGH",
+      "steps": [
+        "1.1 Convert the task document to JSON",
+        "1.2 Validate the JSON structure"
+      ],
+      "status": "not_started",
+      "dependencies": []
+    },
+    {
+      "id": "2",
+      "title": "Test Execution",
+      "description": "**Priority**: MEDIUM | **Complexity**: MEDIUM | **Impact**: HIGH",
+      "steps": [
+        "2.1 Execute the converted task",
+        "2.2 Verify the execution results"
+      ],
+      "status": "not_started",
+      "dependencies": []
+    }
+  ],
+  "resources": {},
+  "usage_examples": []
+}

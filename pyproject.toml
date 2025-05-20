@@ -1,0 +1,62 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "claude-code-mcp"
+version = "1.13.0"
+description = "Enhanced MCP server for Claude Code with task orchestration and converter"
+authors = [
+    {name = "Graham A", email = "grahama1970@example.com"},
+]
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "License :: OSI Approved :: MIT License",
+    "Development Status :: 4 - Beta",
+]
+dependencies = [
+    "loguru>=0.7.2",  # Logging library
+    "typer>=0.9.0",   # CLI interface
+    "tiktoken>=0.5.2", # Token counting
+    "pytest>=7.4.3",  # Testing
+    "ruff>=0.2.0",    # Linting
+    "mypy>=1.8.0",    # Type checking
+    "pydantic>=2.5.2", # Data validation
+    "httpx>=0.25.0",  # HTTP client
+]
+
+[project.urls]
+"Homepage" = "https://github.com/grahama1970/claude-code-mcp-enhanced"
+"Bug Tracker" = "https://github.com/grahama1970/claude-code-mcp-enhanced/issues"
+"Documentation" = "https://github.com/grahama1970/claude-code-mcp-enhanced#readme"
+
+[project.scripts]
+claude-code-mcp = "claude_code_mcp.cli:app"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/claude_code_mcp"]
+
+[tool.ruff]
+line-length = 100
+select = ["E", "F", "B", "I"]
+target-version = "py310"
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+
+[tool.pytest]
+testpaths = ["tests"]

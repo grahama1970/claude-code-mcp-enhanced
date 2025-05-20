@@ -45,15 +45,41 @@ desktop.ini
 .settings/
 
 # Build output and directories
-# dist/ - We'll keep this since it seems to be used for deployments
 /build/
 /.next/
 /out/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+develop-eggs/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+.pytest_cache/
+.coverage
+htmlcov/
+.venv/
 
 # Temporary files
 *.tmp
 *.temp
 .cache/
+/tmp/
+test_output*.json
+*_test_output.json
+final_test_output.json
+converted_tasks.json
 
 # Test coverage
 /coverage/

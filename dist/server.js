@@ -6,11 +6,20 @@ import { spawn } from 'node:child_process';
 import { existsSync, watch } from 'node:fs';
 import { promises as fs } from 'node:fs';
 import { homedir } from 'node:os';
-import { join, resolve as pathResolve } from 'node:path';
+import { join, resolve as pathResolve, dirname } from 'node:path';
 import * as path from 'path';
 import * as os from 'os'; // Added os import
+import { fileURLToPath } from 'node:url';
 import retry from 'async-retry';
 import packageJson from '../package.json' with { type: 'json' }; // Import package.json with attribute
+// Create __dirname equivalent for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+// Import task command functions
+// Using the pooled implementation for better resource management
+import { executeTask, taskStatus } from './pooled_task_command.js';
+// Task execution mode configuration
+const defaultTaskExecutionMode = process.env.MCP_DEFAULT_TASK_EXECUTION_MODE === 'parallel' ? 'parallel' : 'sequential';
 // Define environment variables globally
 const debugMode = process.env.MCP_CLAUDE_DEBUG === 'true';
 const heartbeatIntervalMs = parseInt(process.env.MCP_HEARTBEAT_INTERVAL_MS || '15000', 10); // Default: 15 seconds
@@ -265,6 +274,39 @@ class ClaudeCodeServer {
                     },
                 },
                 {
+                    name: 'execute_task',
+                    description: 'Execute a task with the task orchestration system. Tasks can be run in sequential or parallel mode.',
+                    inputSchema: {
+                        type: 'object',
+                        properties: {
+                            taskId: {
+                                type: 'string',
+                                description: 'ID of the task to execute',
+                            },
+                            executionMode: {
+                                type: 'string',
+                                enum: ['sequential', 'parallel'],
+                                description: 'Execution mode for task (sequential or parallel). Defaults to sequential.',
+                            },
+                        },
+                        required: ['taskId'],
+                    },
+                },
+                {
+                    name: 'task_status',
+                    description: 'Check the status of a task being executed by the task orchestration system.',
+                    inputSchema: {
+                        type: 'object',
+                        properties: {
+                            taskId: {
+                                type: 'string',
+                                description: 'ID of the task to check status for',
+                            },
+                        },
+                        required: ['taskId'],
+                    },
+                },
+                {
                     name: 'claude_code',
                     description: `Claude Code Agent: Your versatile multi-modal assistant for code, file, Git, and terminal operations via Claude CLI. Use \`workFolder\` for contextual execution.
 
@@ -487,8 +529,67 @@ class ClaudeCodeServer {
                     throw new McpError(ErrorCode.InternalError, `Failed to convert markdown tasks: ${errorMessage}`);
                 }
             }
-            // Handle tools - we support 'health', 'claude_code', and 'convert_task_markdown'
-            if (toolName !== 'claude_code' && toolName !== 'health' && toolName !== 'convert_task_markdown') {
+            // Handle execute_task tool
+            if (toolName === 'execute_task') {
+                const toolArguments = args.params.arguments;
+                // Extract taskId (required)
+                let taskId;
+                let executionMode;
+                if (toolArguments &&
+                    typeof toolArguments === 'object' &&
+                    'taskId' in toolArguments &&
+                    typeof toolArguments.taskId === 'string') {
+                    taskId = toolArguments.taskId;
+                }
+                else {
+                    throw new McpError(ErrorCode.InvalidParams, 'Missing or invalid required parameter: taskId for execute_task tool');
+                }
+                // Extract executionMode (optional)
+                if (toolArguments.executionMode &&
+                    (toolArguments.executionMode === 'sequential' || toolArguments.executionMode === 'parallel')) {
+                    executionMode = toolArguments.executionMode;
+                }
+                debugLog(`[Debug] Executing task: ${taskId} in ${executionMode || 'sequential'} mode`);
+                try {
+                    const result = await executeTask({ taskId, executionMode });
+                    this.activeRequests.delete(requestId);
+                    return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+                }
+                catch (error) {
+                    this.activeRequests.delete(requestId);
+                    const errorMessage = error instanceof Error ? error.message : String(error);
+                    throw new McpError(ErrorCode.InternalError, `Failed to execute task: ${errorMessage}`);
+                }
+            }
+            // Handle task_status tool
+            if (toolName === 'task_status') {
+                const toolArguments = args.params.arguments;
+                // Extract taskId (required)
+                let taskId;
+                if (toolArguments &&
+                    typeof toolArguments === 'object' &&
+                    'taskId' in toolArguments &&
+                    typeof toolArguments.taskId === 'string') {
+                    taskId = toolArguments.taskId;
+                }
+                else {
+                    throw new McpError(ErrorCode.InvalidParams, 'Missing or invalid required parameter: taskId for task_status tool');
+                }
+                debugLog(`[Debug] Checking status for task: ${taskId}`);
+                try {
+                    const result = await taskStatus({ taskId });
+                    this.activeRequests.delete(requestId);
+                    return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+                }
+                catch (error) {
+                    this.activeRequests.delete(requestId);
+                    const errorMessage = error instanceof Error ? error.message : String(error);
+                    throw new McpError(ErrorCode.InternalError, `Failed to check task status: ${errorMessage}`);
+                }
+            }
+            // Handle the supported tools
+            if (toolName !== 'claude_code' && toolName !== 'health' && toolName !== 'convert_task_markdown' &&
+                toolName !== 'execute_task' && toolName !== 'task_status') {
                 // ErrorCode.ToolNotFound should be ErrorCode.MethodNotFound as per SDK for tools
                 throw new McpError(ErrorCode.MethodNotFound, `Tool ${toolName} not found`);
             }
